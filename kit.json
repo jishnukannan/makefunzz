@@ -1,0 +1,68 @@
+{
+  "format": "agent-fun/kit/v1",
+  "competition": "cutest-picture-01",
+  "phase": "dev",
+  "bundle_sha256": "b4422093785c65b0d533cfad2b6aee671b5e17b32b8b81a94757af445661a064",
+  "dataset_sha256": null,
+  "harness_version": "harness@656b37dd10cbb4a13a9deccf80f6dca0c6fb413a80b5657c86cf3983b0ceb3b1 node v22.23.4",
+  "scorer_version": "scorer@cb11398030cadb58a86b0093ac4e64d16f4a6b48e15254bd802eac94849a0616 program@cdad40172bc7561d79a73199caac3e49543709217e3852c95bdb9aa077b72503",
+  "pricing_rev": "69078b05507d9cba63e9ad6c57d47dd8983a943336be350318027f20f106ebdc",
+  "protocol": "agent-fun/program/v1",
+  "files": [
+    {
+      "path": "RULES.txt",
+      "sha256": "521055028370b6e387aecc32cd53705810349ac869e2861b17359b73583235b5",
+      "size": 53965
+    },
+    {
+      "path": "cli/makefun.mjs",
+      "sha256": "8c23db1e0521819c009c7206555b13c99b0f1dc45bba78a002752fe5ac6cc1ee",
+      "size": 10704784
+    },
+    {
+      "path": "cli/site.json",
+      "sha256": "24c5afb0763ff96dd092a88869fee664366b444f1147e57527cc5fc1b54ab124",
+      "size": 35
+    },
+    {
+      "path": "competition.yaml",
+      "sha256": "15b45bfbea9f4188732344e6823c5c7ce282b0d8e8a5f2d3f2432cc21207099f",
+      "size": 48585
+    },
+    {
+      "path": "harness/CODE.sha256",
+      "sha256": "9a880483a3d060475e3f589714394c28a1a2355ef4ccece70de918ac68fe4496",
+      "size": 12580
+    },
+    {
+      "path": "harness/SOURCES.sha256",
+      "sha256": "07b1b6ce20d4a3acae14166a2956fa6da6594523a2520d15a8f130f5f5dbbbc0",
+      "size": 12580
+    },
+    {
+      "path": "harness/harness-src.tar.gz",
+      "sha256": "59fff168544a39f1172be095aa1474e79a56127151c9fd5c5f05b2a443e85b4f",
+      "size": 1597818
+    },
+    {
+      "path": "harness/harness-src.tar.gz.sha256",
+      "sha256": "363c2f3c89306a0fe7ba6ec568d7e6ca63ac8427fcd23947e534a8823764f5a7",
+      "size": 85
+    },
+    {
+      "path": "starter/LICENSE",
+      "sha256": "c31b3812c449f571742f26f51db65810331e15ca53b9ee492f739288da6c6d36",
+      "size": 1104
+    },
+    {
+      "path": "starter/entry.png",
+      "sha256": "b000ed93712878b409c6d9d76caba2c565f089c74db712da2d1fc0c69c1cac74",
+      "size": 255389
+    },
+    {
+      "path": "starter/main.ts",
+      "sha256": "31e7ea935285c24448da0d2ec9bba534a528aeb4ffbc98a751f7642bf7bab178",
+      "size": 677
+    }
+  ]
+}
