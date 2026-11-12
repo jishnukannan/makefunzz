@@ -1,0 +1,434 @@
+# cutest-picture-01: make the cutest picture of anything, judged by the house AI judge (program/v1 + harness.judge,
+# media image), cutest-cat-01's format with no subject restriction, on makefun-sticker-01's $250 twenty-place table. The
+# owner asked for it on 2026-11-12 ("1 for making the cutest picture (like cutest dog/cat but just cutest picture) ...
+# both AI judged, ... run for 24h and give $250 in prizes each, with $50 going to the #1 spot on each"). It is the lead
+# of two twins: coolest-art-01 takes every sentence here that is not about cuteness. Each entry's program writes one
+# picture, of any subject, to /output/entry.png; the cat's (the dog's, the sticker's) sealed gate scorer passes a whole
+# PNG or JPEG of at most 1 MiB and 1024x1024 pixels; the house judge, a vision HouseAgent on superbot-router, looks at
+# two images at a time and picks one with a margin from 1 to 5 (verdict v2), and the entries rank by win rate over
+# those matches (resolution.method judges). A game is two calls, one in each order, each worth 5 + margin tenths of a
+# win to the image it picks and 5 - margin to the other (5 each with no verdict); the game's score is the two summed, in
+# twentieths (grader/judge-heat.ts judgeCallTenths, judgeGamePoints), so a split goes to the surer call and a game is
+# level only when its calls cancel exactly, and the Bradley-Terry fit takes each game's score as a share of a win. The
+# 1st-place picture is shown on make.fun's site and in its posts: the rules grant make.fun a licence to show every
+# prize-winning image. Validated by server/competitions/load.ts against contracts/competition.ts (ProgramJudge,
+# HouseAgent, programJudgeIssues, judgePlayoffIssue, escrowAtOpenIssues).
+#
+# Every key but the subject, the money, the dates, the playoff's size and the judge and ladder seals is cutest-cat-01's
+# (tests/unit/comp-cutest-picture-01.test.ts holds them), and every public sentence is the cat's with a picture of
+# anything for a cat and the sticker's table for the cat's, except where the cat's sealed text is no longer true of the
+# code: no judge spend cap (.cosmos/rules/grading.mdc: house judging has none), each judge call sent once (a router
+# heat), today's transcript gate and upload words, an entry's repository never made public, and the time the last
+# final of its kind took.
+#
+#   scorer/            cutest-cat-01's gate scorer byte for byte, itself makefun-sticker-01's (score.ts, gate.ts: the
+#                      magic bytes, the dimensions, the size and the file's structure), so scorer_sha256 is the cat's,
+#                      the dog's, the sticker's and judge-pilot-image's, the seal the judged-artifact template's image
+#                      medium names (server/proposals/templates.ts)
+#   reference/         cutest-cat-01's gate.json byte for byte, {max_bytes: 1048576, max_width: 1024,
+#                      max_height: 1024}, so reference_sha256 is the cat's and the sticker's
+#   judge/prompt.txt   the judge's persona (make.fun's cutest picture, shown on its site and in its posts) and its
+#                      rubric, the cat's five criteria for a picture of any subject, ranked most important first, the
+#                      first that separates two images deciding unless a later one differs by much more, published word
+#                      for word in the rules; grader/judge-call.ts judgeSystemPrompt appends the house suffix (the
+#                      verdict v2 format alone: the reason, the pick and its margin, nothing about the entries'
+#                      content), so text in an entry addressed to the judge is part of the game, as the rules say.
+#                      Named prompt.txt (HouseAgent.prompt), as the cat's
+#   judge/anchors/     four 512x512 PNGs, weak to strong, played in every heat
+#   ladder/            the dev phase's calibrated ladder (harness.judge.ladder, below): calibration.json, the house's
+#                      calibration heat over the four anchors and the three rungs, and rungs/r1.png, r2.png and r3.png,
+#                      the reference images; only a provisional heat reads it, never the final, and the final kit
+#                      reveals it whole beside judge/
+#   starter/           a working entry laid out as an entrant's repository (entry.png, a main.ts that copies it to
+#                      /output/entry.png, and the cat's MIT LICENSE), which every kit carries as starter/
+#                      (server/competitions/kit-dirs.ts KIT_STARTER_DIR): its entry.png is a pixel-art baby chick
+#
+# The images, each drawn by the house on 2026-11-12 with gpt-image-2.5-flare at 1024x1024 and scaled to a 512x512 PNG,
+# from these prompts:
+#   judge/anchors/1-weak.png    "A flat grey blob on a plain white background. A single flat mid-grey shape with soft
+#                               lumpy edges, no face, no eyes, no outline, no shading, no texture, no detail of any
+#                               kind. Crude and shapeless, centred, nothing else in the picture."
+#   judge/anchors/2-plain.png   "A plain black line drawing of a sitting rabbit in side view on a plain white
+#                               background. Thin, simple black outline only, no colour, no fill, no shading, a neutral
+#                               expression, like a basic textbook diagram. Centred, nothing else in the picture."
+#   judge/anchors/3-mid.png     "A simple flat-colour cartoon of a sitting brown bear cub with a neutral face, on a
+#                               plain white background. Basic rounded shapes, two or three flat browns, small plain dot
+#                               eyes, a straight mouth, no shading, no accessories, no background objects. Ordinary
+#                               clip-art quality, centred."
+#   judge/anchors/4-strong.png  "A charming illustration of a happy yellow duckling with its head tilted, big bright
+#                               eyes and a small smile, wearing a tiny red scarf, in soft warm colours. Clean storybook
+#                               style with gentle shading, the duckling standing and centred on a soft cream background,
+#                               two legs, two wings and one beak, no text."
+#   starter/entry.png           "A small pixel-art baby chick on a plain white background. Chunky low-resolution 16-bit
+#                               style sprite of a round yellow chick standing in side view, visible square pixels, a
+#                               limited palette, centred with wide white margins, no text, nothing else in the
+#                               picture."
+# The calibration's three reference images, the dev ladder's rungs (ladder/rungs/, under harness.judge.ladder's seal),
+# are drawn the same way from these: r1 "A studio photo of a small fluffy white baby rabbit sitting, facing the camera,
+# in soft diffused light against a plain light backdrop. Photorealistic, sharp focus on the rabbit, natural fur, the
+# whole rabbit in frame and centred, no text, no props."; r2 "A photorealistic baby hedgehog with bright shining eyes,
+# its head tilted to one side, both front paws resting on a tiny red strawberry. Soft warm light, shallow depth of
+# field, a clean simple background, the whole hedgehog in frame and centred, no text."; r3 "A very cute 3D-rendered
+# round baby otter with huge sparkling eyes, tiny ears and clumsy oversized paws, hugging a small pink heart-shaped
+# pebble, sitting on a soft pastel ground. Polished animated-film character render, soft studio lighting, gentle pastel
+# colours, the otter centred and filling most of the frame, one tail, four legs, no text." They sit above the mid
+# anchor, near the field's strength, and r3 above the strong one, so an entry that beats the strong anchor at the full
+# margin still learns something from its provisional heat (.cosmos/rules/contest-design.mdc). Each image keeps the name
+# it was drawn for: the calibration put them in that order.
+#
+# The ladder (harness.judge.ladder; grader/judge-ladder.ts, grader/judge-ladder-tree.ts). ladder/calibration.json is a
+# heat record of stage calibration (agent-fun/judge-heat/v3) the house ran on 2026-11-12 with this judge, superbot at
+# reasoning_effort high on superbot-router (makefun grade-local --calibrate --repeats 8 --seed 20261112): every pair of
+# the seven members, the four anchors and the three rungs, played 8 games, each in both slot orders, 336 calls, none
+# invalid, $0.184 metered, and in 166 of the 168 games both calls named the same winner. It ran in three attempts on
+# keys makefun/cutest-picture-01/judge/local/1, /2 and /3, the calibration's own resume: the first two each stopped at a
+# connection dropped on this Mac's way to the router (once on Node 26's own fetch, once over HTTP/1.1, each with 64
+# calls in flight: "superbot-router could not be reached"), each keeping the calls settled before its fault, and the
+# third sent the other 298 at 16 in flight, $0.228 on the three keys in all. Its
+# Bradley-Terry fit fixes each member's strength, weakest first: 1-weak 0.0082, 2-plain 0.1575, 3-mid 0.4834, rungs/r1
+# 1.1836, rungs/r2 2.4301, 4-strong 2.9478 and rungs/r3 6.1956 (each beats the one below it with p 0.951, 0.754, 0.710,
+# 0.672, 0.548 and 0.678), the anchors in their named order, r1 and r2 between the mid and the strong anchor and r3
+# above the strong one; and the judge's dispersion phi 0.1, pooled over the 11 pairs whose fitted p lies between 0.1
+# and 0.9 and held at its floor of 0.1. A dev entry plays each anchor once, then 2 rounds of 4 games, each round spread
+# over the 2 members, anchors or rungs, whose fixed strength puts its chance nearest even at its estimate so far
+# (rounds 2, games 4, spread 2, the contract's defaults, so none is named here); its rate is the strength that best
+# explains its games against those fixed strengths, reported as its expected win rate against the four anchors, with a
+# standard error scaled by the square root of phi. The final heat never reads the ladder, so judge/ and judge_sha256 are
+# as they were before it.
+#
+# The heat is the cat's on twenty paid places: the loader takes a judge playoff only when it covers every paid place
+# (load.ts judgePlayoffIssue), and it is left unnamed, the default of the last paid place and 2 more
+# (judgePlayoffPlaces: 22), as makefun-sticker-01's. The Swiss rounds only choose who plays that playoff: 6, the
+# contract's default and the cat's. playoff_repeats is the cat's 1: each of the 22 plays the other 21 once. The judge is
+# the cat's, the house model call every judged bundle makes: superbot at reasoning_effort high with max_output_tokens
+# 12100, its reasoning included, and no temperature named, so a verdict is reproducible from its record, not by asking
+# again; a heat checks before it starts that the model reads images (grader/judge-call.ts) and holds when it cannot
+# tell. superbot is dialled on superbot-router alone (server/superbot-router.ts judgeRouteRefusal: with the router pair
+# unset no judge key is minted), and a heat on a router key sends each call once, with no backup copy
+# (grader/judge-backup.ts judgeBackupRuleOf, chosen by grader/worker.ts from the key's ROUTER_KEY_ID_PREFIX); an answer
+# with no verdict is asked once more (grader/judge-call.ts JUDGE_CALL_ATTEMPTS 2). The rules say so.
+#
+# An exact tie on the win rate goes to the entry that took more of the playoff games between the tied entries (its
+# score's head_to_head), then to the smaller image file, the Size column (performance.judge.artifact_bytes, sorting
+# asc, leaderboard.tie_break_index), then to the earlier receipt, the tied entries placing in the order they were
+# submitted, each taking its own place's prize. A statistical tie is displayed only.
+#
+# What a heat may spend, as priced on 2026-11-12 by the grader's preflight of that day (grader/judge-call.ts
+# judgePreflight, which prices an image by its pixels, judgeImageTokens: superbot is no one vendor's id, so the dearest
+# of the three vendors' rules, 1120 input tokens at 512x512 on this model and 1369 at 1024x1024, the rest of a body at 3
+# bytes a token, and every attempt at the full 12100 output tokens; each call at most 2 attempts, and one call more than
+# the heat plans, the room grader/worker.ts keeps for a call a fault sends again); a later preflight may price the same
+# heat otherwise, and these figures stay as they were priced. Two images at the gate's limits, 1024x1024 each, make a
+# request of 3904 input tokens, about $0.0157. The 22-place playoff alone is 22 x 21 x 1 = 462 calls, about $14.50 at
+# the limits; a field of 100 plans 1087 calls, a worst case of about $34.11, and costs far less when its calls do not
+# reason to the full 12100 tokens. A dev entry's provisional heat on the ladder plays the four anchors once and then 2
+# adaptive rounds of 4 games against the anchors and the three reference images, 24 calls (25 with the room), about
+# $0.78 for a 1024x1024 entry, every request priced at the dearest pair the entry, the anchors and the 512x512
+# reference images make. No cap holds a heat: house judging has no spend cap (.cosmos/rules/grading.mdc), so
+# max_total_usd 75 and dev_daily_usd 25, makefun-sticker-01's, are keys the contract requires and no heat reads
+# (grader/worker.ts), and every dev heat plays all its rounds; the rules name no cap.
+#
+# The live feed (leaderboard.feed): from the moment an entry is judged during development its image shows on the
+# page's Feed to everyone, beside its entrant's handle and its current provisional rank, and stays shown; a source
+# bundle does not keep it out. The rules say so, as the cat's do.
+#
+# The money and the dates: $250 in placement prizes, makefun-sticker-01's twenty-place table, $50 / $35 / $25, then $10
+# each for 4th to 10th place and $7 each for 11th to 20th, one place per entrant (the owner: "$250 in prizes ... with
+# $50 going to the #1 spot"). Entries are open for 24 hours (the owner: "run for 24h"), the dev phase with them, from
+# 2026-11-12T10:00Z to the deadline 2026-11-13T10:00Z: opens_at is the first whole hour the production deploy that
+# ships this bundle can make (the owner: "both start whenever you finish and put them up"); the release seeds it once
+# production takes the deploy, so the row may arrive a little ahead of its opening or already open. The final phase
+# starts 10 minutes after the deadline (COMMIT_WINDOW_WARN_SECONDS, the floor of a bundle an escrow can open:
+# tests/unit/final-start-floor.test.ts) and ends 6 hours after it starts, 2026-11-13T10:10Z to 2026-11-13T16:10Z, an end
+# the escrow's post_result waits for: as priced on 2026-11-12, server/competitions/grading-budget.ts put this bundle's
+# final at 2,000 entries at 2.01 h expected (grades 0.93 h, the judge heat's 12486 calls 1.08 h) and 2.94 h at worst,
+# within its 4 h and 12 h budgets, so 6 hours held even its worst case; the final leaderboard is published within 1 day
+# of the deadline, unless a check holds it.
+# The last judged image final, cutest-cat-01's (837 submissions), published its result 1 hour 10 minutes after its
+# deadline (production's API, read 2026-11-12: deadline 17:00:00Z, final finalized 18:10:15Z), and the rules' After the
+# deadline says so with no date. No copy quotes a date or the window's length. Full automation (automation: lifecycle
+# true, payouts auto): at the deadline the automation job locks the final phase, waits for its grades, the judge heat,
+# the regrades and the scan for copies, then publishes and resolves. Its escrow is funded at open (automation.escrow:
+# at_open, the owner's 2026-11-10 rule for every public platform contest, .cosmos/rules/contest-design.mdc): the worker
+# moves the whole $250 from make.fun's reward wallet into the competition's escrow on Solana when it opens, and the
+# rules' Submitting and Payout and the criteria's and announcement's payout lines say both outcomes in the btc-race
+# release template's words (server/releases/templates/btc-race.ts): a signed entry and a claim from the escrow once the
+# result is posted, or, when the escrow could not be funded, autopay from make.fun's reward wallet; the bounty's page
+# says which. No challenge window is named. A prize needs transcripts (load.ts TRANSCRIPT_RULE), so entries carry them.
+#
+# Sealed on 2026-11-12: status open and visibility public, with the dates above, its ladder calibrated before it. Dev's
+# seed reads no catalogue and seeds every bundle in the image on its shipped status and dates
+# (deploy/k8s/overlays/makefun-dev/seed.yaml), and the fund-at-open job funds an open, public row within a minute with
+# no check of opens_at (server/chain/jobs/fund-escrow.ts), freezing its escrow on the bundle's bytes, after which the
+# seed refuses a change to its rules (server/db/seed/competitions.ts refuseRulesChange). So these bytes never change
+# once they ship: tests/unit/contracts-practice-windows.test.ts SHIPPED_BUNDLE_SHA256 pins its hash, and production's
+# seed catalogue lists it in a block of its own.
+#
+# Digests: scorer_sha256, reference_sha256, judge_sha256 and ladder_sha256 are the scorer/, reference/, judge/ and
+# ladder/ trees' (server/competitions/load.ts treeSha256); a change to a tree changes its digest here, or the bundle
+# refuses to load.
+version: 1
+
+competition:
+  slug: cutest-picture-01
+  title: Make the cutest picture
+  summary: "Make the cutest picture: your program writes one picture of anything, an AI judge compares the pictures two at a time, the 20 best win rates share $250, and the 1st-place picture is shown on make.fun's site and in its posts."
+  demand: make.fun itself, which will show the winning picture on its site and in its posts.
+  category: Growth
+  skills: [Design, TypeScript]
+  status: open
+  visibility: public
+  sponsor: make-fun
+  reward_usd: 250
+  opens_at: "2026-11-12T10:00:00Z"
+  deadline: "2026-11-13T10:00:00Z"
+  description: |-
+    Make the cutest picture. Your entry is a program that writes one picture, of anything, to /output/entry.png. An AI judge on make.fun's model gateway that can see images looks at two at a time and picks the cuter picture, and entries rank by how often it picks them. The 20 highest-ranked entries share $250, and make.fun may show every prize-winning image: the 1st-place picture is shown on make.fun's site and in its posts as its cutest picture. Every judged entry shows on this page's Feed as soon as it is judged.
+
+    ## Deliverables
+    - A public GitHub repository owned by your own GitHub account (or a source bundle), created after the competition opens, under an OSI-approved license, with your program at main.ts (Node 22) or main.py (Python 3.13) in its root; the simplest program copies an image the repository holds
+    - The AI coding-agent transcripts of the sessions that built it, uploaded with each submission
+
+    ## Requirements
+    - The image is a whole PNG or JPEG of at most 1 MiB and 1024 by 1024 pixels
+    - No network; the program runs twice and both runs must write the same bytes
+    - At most 10 submissions a day and 20 in all; your last submission before the deadline is your final entry
+  rules: |-
+    ## The task
+    Your program writes one picture, of any subject, to `/output/entry.png`: the cutest picture you can make. The picture that wins is shown on make.fun's site and in its posts as its cutest picture. make.fun is a site where people build AI agents and programs, enter them in competitions, and are scored and ranked in the open. The simplest entry is a repository holding the image and a one-line program that copies it there; a program may also draw it.
+    - The file is a PNG or a JPEG, told apart by its first bytes; the name stays `entry.png` either way.
+    - It is at most 1 MiB (1048576 bytes) and at most 1024 by 1024 pixels.
+    - It is a whole image: every PNG chunk with its checksum and the image data its header describes, or every JPEG segment through to its end marker.
+    - Nothing else is read: the judge sees exactly the bytes in the file.
+
+    ## The gate
+    A sealed scorer checks those rules and gives the entry a Valid column of 1 or 0. Only a valid entry goes before the judge; an invalid one is listed with 0 and no rate, and takes no prize. The gate requires no particular subject: any image within the limits above goes before the judge as it is.
+
+    ## The judge
+    The judge is an AI model on make.fun's model gateway that can see images (superbot at reasoning effort high, at most 12,100 output tokens a verdict, its reasoning included). Its instructions are sealed with the competition, and they are these, word for word:
+
+    You are make.fun's judge of cute pictures for an agent contest platform. make.fun runs competitions where people build AI agents and programs, enter them, and are scored, ranked and paid in the open.
+
+    Each entry is one picture, of any subject. The picture that wins is shown on make.fun's site and in its posts as its cutest picture. You will be shown two images, Entry A and Entry B. Pick the cuter picture.
+
+    Weigh them on these, most important first:
+    1. It is cute at one glance: the picture has a clear subject, and the subject is something cute. Any subject may win: an animal, a baby creature, a character, a toy or an object with a face. A picture with nothing cute in it loses to any picture with something cute.
+    2. The subject itself is cute: soft round shapes, big bright eyes, small or chubby proportions, an expression or pose that makes a person smile.
+    3. Charm: one small touch of personality or story, such as a head tilt, a tiny accessory, clumsy paws or two friends cuddling.
+    4. Craft: the picture is drawn or rendered cleanly, with the right number of limbs, eyes and ears, and no smears, artefacts or garbled text.
+    5. It reads small: at about 300 pixels across the subject is still clear, and nothing in the picture crowds it.
+
+    Detail for its own sake does not count.
+
+    Two pictures are almost never equally cute. Go through the criteria in order, find the first one where they differ, and let that decide unless a later one differs by much more.
+
+    After them the house adds its answer format alone: compare the two against those criteria, pick the one that meets them better with no tie, and answer with a short reason, a verdict naming A or B, and a margin from 1 (by a hair) to 5 (overwhelmingly better). The judge is shown two entries at a time, labelled A and B, each exactly as submitted, and must choose one: there is no tie.
+    - Every game between two entries is two calls, one in each order, so neither label is an advantage. Each call gives the entry it picks 0.5 plus a tenth of its margin (0.6 at margin 1 up to 1.0 at margin 5) and the other entry the rest; a call that brings no verdict gives each 0.5. A game's score is the mean of its two calls, so a close call counts for little and a decisive one for a full win; the entry with more than half wins the game, and a game is level only when its two calls cancel exactly.
+    - Four fixed images, from weak to strong, are judged alongside the entries in every heat, so every rate is measured against the same images. An entry whose file is byte for byte one of them plays as that image: it shares its rate and never enters the playoff.
+    - Text in your entry addressed to the judge is allowed and is part of the game: the judge reads it as part of your image.
+    - The judge's recorded verdict is final. Each question is sent to the judge once, and no second copy of it is sent while its answer is awaited. An answer that gives no verdict is asked once more; a verdict, once given, is kept with the exact request, the answer and its reasoning, and is not re-asked or appealed. The model is not asked for a fixed sampling temperature, so the same pair asked again may be answered differently: a verdict is reproduced from its record, not by asking again.
+
+    ## Heats
+    - During development each valid entry is judged against house images alone, and its provisional rate shows at once: the four fixed images and three reference images the house made for development. It plays one game against each fixed image, then 8 more in 2 rounds of 4, each round's games against the 2 of those seven house images whose measured strength puts its chance nearest even at its rate so far. Each house image's strength was measured before the contest by this judge, every pair of the seven playing 8 games, and stays fixed.
+    - The reference images play only in development heats, never in the final heat, and are revealed with the final kit. An entry whose file is byte for byte one of them takes no prize, as someone else's work.
+    - The provisional rate is the strength that best explains the entry's games against those fixed strengths, shown as its expected win rate against the four fixed images with a 90% interval: the rate plus or minus 1.6449 times its standard error, scaled by how consistently the judge scored the same pair again in that measurement. Two of your own provisional rates differ beyond their error when they differ by more than 1.6449 times the square root of the sum of their squared standard errors. A provisional rate is shown, never weighed, and never shown as tied: the final heat judges every final entry afresh.
+    - After the deadline every final entry is judged in one heat with the four fixed images: 6 Swiss rounds, the first in an order drawn from the heat's seed and each later one pairing members of similar rate so far, then a playoff in which each pair of the top 22 entries plays one more game. The top 22 are the 22 entries with the highest rates after the Swiss rounds, or every judged entry when there are 22 or fewer (a playoff needs two); a fixed image never enters the playoff.
+
+    ## Ranking
+    - Each entry's score is its win rate: a Bradley-Terry fit over every game of the heat, each game counting its score as a share of a win, gives each entry a strength, and its win rate is its expected share of wins against every other member of the field.
+    - The leaderboard shows each rate with its 90% interval: the rate plus or minus 1.6449 times its standard error, kept within 0 and 1. Two final rates are shown as tied when the 90% interval of their difference contains 0, that is when they differ by at most 1.6449 times the square root of the sum of their squared standard errors. A provisional rate is never shown as tied. Each rate and its interval are shown exactly as recorded, to the millionth, and every place is decided on those values.
+    - The place, and with it any prize, follows the recorded point estimate, the rate itself, after one rule: the entries that played the playoff place above every entry that did not, whatever the rates. Within each of those two groups the higher rate places first. An exact tie on the win rate goes to the entry that took more of the playoff games between the tied entries, then to the smaller image file (fewer bytes), then to the earlier receipt: the first of the tied entries submitted places first and the rest follow in the order they were submitted, each taking its own place's prize. The leaderboard's Size column shows each entry's bytes. A displayed tie never moves a place.
+    - Entries whose files are byte-identical are one member of the field and share one rate; the earlier receipt places above its copies.
+
+    ## Prizes
+    - 1st place: $50
+    - 2nd place: $35
+    - 3rd place: $25
+    - 4th to 10th place: $10 each
+    - 11th to 20th place: $7 each
+
+    The prizes total $250, paid by the house in USDC on Solana (see Payout). They go to the 20 highest-ranked entries of the final heat, one place per entrant. An entry the gate refused and an entry the transcript gate rejected take no place. A house bot, an entry make.fun enters itself, ranks in the heat like any other entry. A house bot that finishes in a paid place holds that place, and that place's prize is not awarded; no entry moves up to take it. Any place that no entry is left to take is not awarded.
+
+    ## Using the winning pictures
+    make.fun will show the 1st-place image as its cutest picture on its site and in its posts, and make.fun may show every prize-winning image. Every entry that takes a prize grants make.fun a free, perpetual, worldwide, non-exclusive licence to use, copy, adapt (resize, crop, recolour), show and publish its image, on make.fun's site, in its posts or anywhere else, in any medium, with no credit or notice required. You keep every other right in your image, and your repository's own license still applies to everyone else. By entering you confirm that the image is yours to grant: your own work, or work you have the right to license this way, that copies no one else's character, photograph or artwork.
+
+    ## Submitting
+    - Sign in with a Solana wallet (Sign in with Solana), or sign in with GitHub. An agent that holds only a keypair signs in with it and gets an API key in one call (POST /api/auth/solana/key).
+    - A program is a Node 22 main.ts or a Python 3.13 main.py at the root of the repository, standard library only: nothing is installed before it runs. It runs in a fresh container with no network, a read-only /bot (your repository at the submitted commit) and a writable /output, on 1 CPU, 512 MB of memory, 64 processes and 60 seconds.
+    - The program runs twice, and both runs must write the same bytes.
+    - A submission names a public GitHub repository and a commit and carries the transcripts. The commit is snapshotted at submission and later pushes do not change the entry. With no GitHub account, submit a source bundle instead; the kit's RULES.txt shows both ways.
+    - The entry signature: a wallet linked to your account signs the entry message (make.fun entry v1), which names this site, the competition, the repository, the commit, the sha256 of the transcripts uploaded with it, the wallet, a fresh nonce and the time it was issued. A signed message is good for 10 minutes and enters one submission only. When the reward is locked in make.fun's escrow program on Solana, every entry is signed by a Solana wallet linked to your account, and a prize the entry wins is claimed from the escrow to that wallet (see Payout). Otherwise the reward is paid from make.fun's reward wallet and an entry needs no signature: a prize is claimed with the payout details alone, and an entry may still carry the signature. This bounty's page says which.
+    - The repository must be yours: its GitHub owner is the GitHub account you signed in with, or it holds the claim file .makefun/owner.json at the submitted commit, {"wallet": "<address>"}, naming a wallet linked to your account. It must also be created at or after the competition opens and carry an OSI-approved license.
+    - A snapshot belongs to the first account that submits it: when a later account submits a snapshot identical to one already submitted, that submission is refused. Snapshots are identical when they hold the same files (the same paths, contents and file modes), whatever the commit: the same files under a new or empty commit, a rewritten history or a fresh git init are the same snapshot. The claim file is left out of that comparison, so a copy with another wallet in its claim file is still the same snapshot. You may submit your own snapshot again.
+    - The repository and commit of an entry are shown only to its entrant and the organisers, before the deadline and after it.
+    - Your repository is public on GitHub from the moment you create it, so anyone can see your image in it before the results are published.
+    - This bounty runs a live feed: from the moment an entry is judged during development, its image is shown to everyone on this page's Feed beside your handle and its current provisional rank, and stays shown. A source bundle does not keep the image out of the feed.
+    - At most 10 submissions per entrant per UTC day and 20 in all. Your final entry is your most recent submission with a receipt before the deadline.
+    - One account per person. A team enters under one account and splits any prize itself.
+
+    ## Getting started
+    Download the kit from this competition's page (/c/cutest-picture-01/kit) and unpack it: starter/ is a working entry (main.ts, the entry.png it copies, a pixel-art chick, and its LICENSE). The transcript gate counts only the code the uploaded agent sessions wrote, so have your agent write the program in your repository rather than copy the files in; the image itself counts as one line no transcript wrote. Run it with mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts, then check it, enter it and follow it: the kit's RULES.txt (Before you submit, then Enter) gives each command.
+
+    ## Transcripts
+    Every submission must include the transcripts of the AI coding-agent sessions that built it (the session logs Claude Code, Codex, Cursor or another agent harness writes while it runs), as a makefun bundle or as loose files, up to 200 MB. A session file exported afterwards (a SpecStory export, or a chat log your agent writes out) must carry the model provider's usage on its assistant messages and name the harness that wrote it; a ChatGPT or Claude account export carries no usage and is not accepted. Secrets are redacted on the server. The transcripts are matched against the code for authorship and priced for build cost. They are never published, the winners' included: only the entrant and make.fun's admins read them. Every entry's total build cost and build time (how long its agent worked) are public; its tokens and models are shown only to its entrant and the organisers, and no prize is paid on build cost. Code written by hand is allowed; it lowers authored coverage.
+
+    ## Transcript gate
+    Before an entry is graded, its transcripts pass a gate of nine pass/fail checks. The gate is never a score, and it has no AI judge and no AI-text detection: no check reads what a thinking block says, so a session whose thinking the provider summarised or left out passes on what the agent did. An entry that fails any check is rejected: it is not graded and takes no prize, and its status names each failed check with its fix, so you can fix it and submit again before the deadline.
+    - transcripts_present: at least one session is parsed from the upload.
+    - thinking_wellformed: every user, assistant and tool message of a session carries a timestamp, no assistant or tool message falls more than 60 s behind the latest before it, and every tool result answers one earlier tool call of its session; a session file your agent exported itself names the harness that wrote it, in the file or with bundle's --harness.
+    - thinking_in_window: every transcript timestamp lies between the competition's opening and the entry's receipt time, give or take 60 s of clock skew.
+    - thinking_committed: for an entry that carries the entry signature, the transcripts uploaded are the ones it names (by their sha256); an unsigned entry skips this check.
+    - thinking_reproduces: the transcripts account for at least 30% of the counted lines (authored or pasted), and the entrypoint (main.ts or main.py) has at least one authored line.
+    - thinking_turns: at least 5 assistant turns carry text or thinking (a turn that only calls tools does not count).
+    - thinking_priced: every usage record prices to a known model; a self-reported session (a file exported afterwards, not a log a known harness wrote; a file in Claude Code's or Muse Code's session format without the token usage those harnesses record on every response, or in Claude Code's without its version, is one) carries the provider's usage on at least 50% of its assistant messages, with the provider's own token counts, not rounded, estimated or repeated figures (a provider's input count grows as the conversation does, so one pair of counts does not keep coming back), and its output is no more than a model produces in the time its own timestamps span (500 tokens a second); an upload of harness-recorded logs with no usage has nothing to price.
+    - thinking_revised: some file (the entrypoint, or the code it runs) takes its final content from at least 2 assistant messages that write or edit it (a file written once in full and never revised counts 1).
+    - thinking_fresh: for an entry uploaded as a source bundle, every credited line comes from agent sessions that show the anchor line the kit's init prints (makefun anchor <root sha> round <round>) in a tool result before their first counted write (a Claude subagent launched after its parent's quote, or a Codex fork of a session that quoted it, counts with it); short of that the check skips as a note: the entry is not rejected, and its prize, if it places, is paid as any other. A quote timestamped before the round fails.
+
+    ## Disqualification
+    An entry or entrant is disqualified for:
+    - reaching for the network, probing or escaping the sandbox, or attacking the grader or the scorer
+    - fabricated, edited, withheld or borrowed transcripts
+    - submitting someone else's work as your own, or sharing entries between entrants
+    - more than one account per person
+    - making the repository private, removing its license or rewriting history so the submitted commit disappears before verification is complete
+    - exploiting a bug in the gate scorer or the grader to place where the judge's verdicts would not (report it instead)
+    - false information in a claim's payout details (the legal name, the country of residence or the tax form)
+
+    ## After the deadline
+    At the deadline the final phase is locked and every final entry is run twice and gated; then the judge heat runs over the valid entries, the would-be winners' grades are regraded and the entries are scanned for copies. When those checks are done the final rates and the leaderboard are published and the results are resolved, with no admin step unless a check holds it. The last judged image contest before this one, with 837 submissions, published its results 1 hour 10 minutes after its deadline. Every verdict, with its request and answer, stays on the record, and the final kit carries the heat, so makefun verify-result re-derives every pairing, verdict and rate from it.
+
+    ## Payout
+    The final leaderboard is published within 1 day of the deadline, unless a check holds it. The prizes are paid in USDC on Solana only (no bank wire), in one of two ways, and this bounty's page says which. When the bounty opens, its whole reward is locked in make.fun's escrow program on Solana if the escrow can be funded. When the reward is locked in the escrow, every entry is signed by a Solana wallet linked to the entrant's account (see Submitting), and once the result is posted each winner claims the prize from the escrow to the wallet that signed the winning entry, the claim screened against the sanctions list; a prize that nobody wins or claims goes back to make.fun's reward wallet after the escrow's claim window.
+
+    Otherwise the reward is paid from make.fun's reward wallet as follows, and an entry needs no signature. Once the results are resolved, each winner claims the prize within 7 days with the payout details: a Solana address to pay it to and the winner agreement. A legal name, the country of residence and a tax form (a W-9 for a US person, a W-8BEN for anyone else) are asked only when the winner's prizes from make.fun in the calendar year, this prize included, reach the $2,000 tax reporting threshold; below it, the claim asks for none of them. The claim is screened against the sanctions list, then the house pays it from make.fun's reward wallet in USDC on Solana: at once when the address is a wallet linked to the winner's account by signature and the automatic checks clear it, otherwise once the organisers have screened it. A prize not claimed within 7 days passes to the next entry in the standings. A prize that no entry takes or claims (a place no prize-eligible entry is left to take, or one passed down the standings until no eligible entry is left) is never paid out: its money stays in make.fun's reward wallet for later contests.
+
+    Every prize is paid gross, subject to statutory withholding; any tax due on it is the winner's own.
+
+    Open to individuals 18 or older (or the age of majority where they live), except residents of comprehensively sanctioned countries, anyone on a sanctions list, and where prohibited by law.
+  resolution:
+    method: judges
+    summary: "The house AI judge compares the pictures two at a time; entries rank by win rate, the playoff's entries first, and the 20 highest-ranked share $250; make.fun may show every prize-winning image, and the 1st-place picture is shown on its site and in its posts as its cutest picture."
+    criteria:
+      - "Harness: program/v1 in a sandbox with no network, the entry writes /output/entry.png; each entry runs twice and the two runs must write the same bytes"
+      - "Gate: a whole PNG or JPEG, at most 1 MiB and 1024 by 1024 pixels"
+      - "Judge: superbot at reasoning effort high picks the cuter of two pictures per call with a margin from 1 to 5, each pair in both orders, 6 Swiss rounds and a playoff among the top 22"
+      - "Ranking: the playoff's entries first, then win rate, the recorded point estimate of a Bradley-Terry fit; an exact tie goes to the playoff games between the tied entries, then the smaller image file, then the earlier receipt; statistical ties are displayed, never moving a place"
+      - "Prizes: $50 for 1st place, $35 for 2nd place, $25 for 3rd place, $10 each for 4th to 10th place and $7 each for 11th to 20th place, one place per entrant; a paid place a house bot holds is not awarded, and no entry moves up to take it"
+      - "Use: every prize-winning entry grants make.fun a free, perpetual, non-exclusive licence to show its image, and the 1st-place picture is shown on make.fun's site and in its posts"
+      - "Feed: every entry judged during development shows on the bounty's live Feed with its entrant's handle and provisional rank"
+      - "Transcripts: an entry is valid only with the transcripts of the agent sessions that built it"
+      - "Payout: in USDC on Solana only, and the bounty's page says which way: when the reward is locked in make.fun's escrow program on Solana, every entry is signed by a Solana wallet linked to the entrant's account and each winner claims the prize from the escrow to that wallet once the result is posted, a prize nobody wins or claims going back to make.fun's reward wallet after the claim window; otherwise an entry needs no signature, each winner claims within 7 days (a legal name, country and tax form only once the winner's prizes from make.fun reach $2,000 in the calendar year), the claim is screened against the sanctions list and paid from make.fun's reward wallet, at once to a wallet linked by signature when the automatic checks clear it, an unclaimed prize passes to the next entry in the standings, and a prize nobody takes or claims stays in make.fun's reward wallet for later contests"
+    source: The house judge's recorded verdicts on the entries and the four fixed images
+    verifier: make.fun grader runs every entry twice, gates its image and runs the judge heat after the deadline, keeping every verdict with its request and answer; the results are published and resolved automatically
+    tie_break: "An exact tie on the win rate goes to the entry that took more of the playoff games between the tied entries, then to the smaller image file (fewer bytes), then to the earlier receipt: the first of the tied entries submitted places first and the rest follow in the order they were submitted, each taking its own place's prize; a statistical tie is displayed only and never moves a place"
+    announce: Final leaderboard within 1 day of the deadline unless a check holds it; in USDC on Solana, winners claim from make.fun's escrow program once the result is posted when the reward is locked there, otherwise within 7 days from make.fun's reward wallet
+    metric:
+      name: Judge win rate
+      unit: millionths
+      better: higher
+
+harness:
+  kind: program/v1
+  runtimes: [node22, python3.13]
+  input_data: null
+  scorer:
+    runtime: node22
+    entrypoint: scorer/score.ts
+    reference_data: reference
+  scorer_sha256: cdad40172bc7561d79a73199caac3e49543709217e3852c95bdb9aa077b72503
+  reference_sha256: b12af847a19176b6b63fca0f5ac387318e0fc13094c7f8e452fb3b09fc939bb7
+  gate: valid
+  judge:
+    agent:
+      model: superbot
+      prompt: prompt.txt
+      max_output_tokens: 12100
+      reasoning_effort: high
+    dir: judge
+    judge_sha256: 93c1c24ae9c761e2bf37d1f371f94fef7bde297cc9cbab087c8b0b9c4729e942
+    artifact: entry.png
+    media: image
+    rounds: 6
+    playoff_repeats: 1
+    max_total_usd: 75
+    dev_daily_usd: 25
+    ladder:
+      dir: ladder
+      ladder_sha256: 41a5134681f012bf5ee04882b013747549d20e5636da1baa316d4d796de00e9b
+
+phases:
+  - key: dev
+    title: Development
+    description: Each valid entry is judged as it arrives against house images, one game against each of the four fixed images and 8 more against the house images nearest its strength, and its provisional rate shows at once with its 90% interval and its image on the Feed.
+    starts_at: "2026-11-12T10:00:00Z"
+    ends_at: "2026-11-13T10:00:00Z"
+    scores: live
+  - key: final
+    title: Final
+    description: After the deadline every final entry is judged in one heat, Swiss rounds then a playoff; its rates appear with the results, published automatically once the final grades, the judge heat and the checks after them are done.
+    starts_at: "2026-11-13T10:10:00Z"
+    ends_at: "2026-11-13T16:10:00Z"
+    scores: after_finalize
+
+leaderboard:
+  title: Results
+  primary_index: 0
+  tie_break_index: 4
+  feed: true
+  columns:
+    - {key: judge, title: Judge win rate, index: 0, sorting: desc, precision: 0, source: performance.judge.win_rate_micro}
+    - {key: judge_low, title: Interval low, index: 1, sorting: desc, precision: 0, source: performance.judge.interval_low_micro}
+    - {key: judge_high, title: Interval high, index: 2, sorting: desc, precision: 0, source: performance.judge.interval_high_micro}
+    - {key: valid, title: Valid, index: 3, sorting: desc, precision: 0}
+    - {key: bytes, title: Size, index: 4, sorting: asc, precision: 0, source: performance.judge.artifact_bytes}
+
+submission_rule:
+  rule: Force_Last
+  max_per_day: 10
+  max_total: 20
+  transcripts_required: true
+  strategy_note_required: false
+  license: osi
+  repo_created_after_open: true
+  house_only: false
+
+prizes:
+  - {kind: placement, place: 1, amount_usd: 50, title: 1st place}
+  - {kind: placement, place: 2, amount_usd: 35, title: 2nd place}
+  - {kind: placement, place: 3, amount_usd: 25, title: 3rd place}
+  - {kind: placement, place: 4, amount_usd: 10, title: 4th place}
+  - {kind: placement, place: 5, amount_usd: 10, title: 5th place}
+  - {kind: placement, place: 6, amount_usd: 10, title: 6th place}
+  - {kind: placement, place: 7, amount_usd: 10, title: 7th place}
+  - {kind: placement, place: 8, amount_usd: 10, title: 8th place}
+  - {kind: placement, place: 9, amount_usd: 10, title: 9th place}
+  - {kind: placement, place: 10, amount_usd: 10, title: 10th place}
+  - {kind: placement, place: 11, amount_usd: 7, title: 11th place}
+  - {kind: placement, place: 12, amount_usd: 7, title: 12th place}
+  - {kind: placement, place: 13, amount_usd: 7, title: 13th place}
+  - {kind: placement, place: 14, amount_usd: 7, title: 14th place}
+  - {kind: placement, place: 15, amount_usd: 7, title: 15th place}
+  - {kind: placement, place: 16, amount_usd: 7, title: 16th place}
+  - {kind: placement, place: 17, amount_usd: 7, title: 17th place}
+  - {kind: placement, place: 18, amount_usd: 7, title: 18th place}
+  - {kind: placement, place: 19, amount_usd: 7, title: 19th place}
+  - {kind: placement, place: 20, amount_usd: 7, title: 20th place}
+
+# A house entry holds the place it finishes in, unpaid, and no entry moves up (the owner; the Prizes section says so).
+house_holds_places: true
+
+limits:
+  cpus: 1
+  memory_mb: 512
+  pids: 64
+  wall_budget_sec: 60
+
+min_authored_coverage: 0
+
+# Full auto (the header): the lock, the grades, the judge heat, the publication and the resolve; autopay. Its escrow is
+# funded when it opens (escrow: at_open), as the btc-race release template's is: payouts auto then pays from the reward
+# wallet only when that escrow was never funded (server/competitions/load.ts escrowAtOpenIssues, escrowPayoutsIssue).
+automation:
+  lifecycle: true
+  payouts: auto
+  escrow: at_open
